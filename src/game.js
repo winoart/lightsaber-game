@@ -75,27 +75,43 @@ class Game {
         this.enemy.updateAI(this.player);
         this.enemy.update(this.gravity);
 
-        // Collision Detection
-        if (this.player.isAttacking && this.player.attackTimer === 10) {
-            const dist = Math.abs(this.player.x - this.enemy.x);
-            if (dist < 120) {
-                const isFinisher = this.player.combo === 3 || this.player.isAirSpin;
-                const damage = isFinisher ? this.player.attackDamage * 2 : this.player.attackDamage;
-                this.enemy.takeDamage(damage);
-                this.createHitParticles(this.enemy.x + 20, this.enemy.y + 40, '#ff0055');
-                this.shake = isFinisher ? 25 : 10;
+        // Precise Player Collision (Tip-based)
+        if (this.player.isAttacking && this.player.attackTimer > 6 && this.player.attackTimer < 14) {
+            if (!this.player.hitRegistered) {
+                const tip = this.player.getSaberTip();
+                const enemyCenter = { x: this.enemy.x + this.enemy.width / 2, y: this.enemy.y + this.enemy.height / 2 };
+                const dist = Math.sqrt(Math.pow(tip.x - enemyCenter.x, 2) + Math.pow(tip.y - enemyCenter.y, 2));
+
+                if (dist < 40) { // Precision hitbox
+                    const isFinisher = this.player.combo === 3 || this.player.isAirSpin;
+                    const damage = isFinisher ? this.player.attackDamage * 2 : this.player.attackDamage;
+                    this.enemy.takeDamage(damage);
+                    this.createHitParticles(tip.x, tip.y, '#ff0055');
+                    this.shake = isFinisher ? 25 : 10;
+                    this.player.hitRegistered = true;
+                }
             }
+        } else {
+            this.player.hitRegistered = false;
         }
 
-        if (this.enemy.isAttacking && this.enemy.attackTimer === 10) {
-            const dist = Math.abs(this.player.x - this.enemy.x);
-            if (dist < 100) {
-                this.player.takeDamage(10 + this.stage * 2);
-                this.createHitParticles(this.player.x + 20, this.player.y + 40, '#00f2ff');
-                this.shake = 15;
-            }
-        }
+        // Precise Enemy Collision
+        if (this.enemy.isAttacking && this.enemy.attackTimer > 6 && this.enemy.attackTimer < 14) {
+            if (!this.enemy.hitRegistered) {
+                const tip = this.enemy.getSaberTip();
+                const playerCenter = { x: this.player.x + this.player.width / 2, y: this.player.y + this.player.height / 2 };
+                const dist = Math.sqrt(Math.pow(tip.x - playerCenter.x, 2) + Math.pow(tip.y - playerCenter.y, 2));
 
+                if (dist < 35) {
+                    this.player.takeDamage(10 + this.stage * 2);
+                    this.createHitParticles(tip.x, tip.y, '#00f2ff');
+                    this.shake = 15;
+                    this.enemy.hitRegistered = true;
+                }
+            }
+        } else {
+            this.enemy.hitRegistered = false;
+        }
         this.particles = this.particles.filter(p => {
             p.x += p.vx;
             p.y += p.vy;

@@ -126,6 +126,10 @@ class Entity {
         if (this.trail.length > this.maxTrail) this.trail.pop();
     }
 
+    getSaberTip() {
+        return this.trail[0] || { x: this.x + this.width / 2, y: this.y + 25 };
+    }
+
     draw(ctx) {
         const headX = this.x + this.width / 2;
         const headY = this.y + 10; 
