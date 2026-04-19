@@ -94,6 +94,7 @@ class Game {
             return;
         }
         if (this.gameState !== 'playing') return;
+        if (!this.player || !this.enemy) return;
         this.player.handleInput(this.input);
         this.player.update(this.gravity);
         this.enemy.updateAI(this.player);
@@ -136,8 +137,8 @@ class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const fy = window.innerHeight - 150;
         Utils.drawLine(this.ctx, 0, fy, window.innerWidth, fy, 2, 'rgba(255,255,255,0.2)', 0);
-        this.enemy.draw(this.ctx);
-        this.player.draw(this.ctx);
+        if (this.enemy) this.enemy.draw(this.ctx);
+        if (this.player) this.player.draw(this.ctx);
         this.particles.forEach(p => { this.ctx.globalAlpha = p.life; Utils.drawCircle(this.ctx, p.x, p.y, p.r, p.color, 10); });
         this.ctx.restore();
     }

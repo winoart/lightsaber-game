@@ -188,13 +188,53 @@ class Enemy extends Entity {
     }
     draw(ctx) {
         if (this.onMotorcycle) {
-            const bx = this.x, by = this.y + this.height - 5;
-            Utils.drawCircle(ctx, bx - 10, by, 10, '#111', 5); Utils.drawCircle(ctx, bx + 35, by, 10, '#111', 5);
-            Utils.drawLine(ctx, bx - 10, by, bx + 35, by, 2, this.color, 10);
-            const hx = this.x + 12, hy = this.y + 12;
-            Utils.drawCircle(ctx, hx, hy, 8, 'white', 4);
-            Utils.drawLine(ctx, hx, hy+8, hx-4, hy+22, 3, 'white', 0);
-            Utils.drawLine(ctx, hx-4, hy+22, hx+10, hy+35, 3, 'white', 0);
+            ctx.save();
+            const bx = this.x + this.width / 2;
+            const by = this.y + this.height - 5;
+            const f = this.facing; // Direction factor
+
+            // 1. Wheels (Neon Rim Effect)
+            Utils.drawCircle(ctx, bx - 25 * f, by, 12, '#111', 0); // Back tire
+            Utils.drawCircle(ctx, bx - 25 * f, by, 8, this.color, 12); // Back neon rim
+            Utils.drawCircle(ctx, bx + 25 * f, by, 12, '#111', 0); // Front tire
+            Utils.drawCircle(ctx, bx + 25 * f, by, 8, this.color, 12); // Front neon rim
+
+            // 2. Motorcycle Body
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 4;
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(bx - 30 * f, by - 5);
+            ctx.lineTo(bx - 10 * f, by - 25);
+            ctx.lineTo(bx + 15 * f, by - 25);
+            ctx.lineTo(bx + 35 * f, by - 5);
+            ctx.stroke();
+
+            // Seat and Engine Area
+            Utils.drawLine(ctx, bx - 5 * f, by - 20, bx + 10 * f, by - 5, 8, '#222', 0);
+            
+            // 3. Headlight
+            Utils.drawCircle(ctx, bx + 38 * f, by - 12, 4, 'white', 15);
+
+            // 4. Stickman Posture (Leaning forward)
+            const hx = bx - 5 * f, hy = this.y + 15;
+            Utils.drawCircle(ctx, hx, hy, 8, 'white', 4); // Head
+            
+            // Body (leaning)
+            Utils.drawLine(ctx, hx, hy + 8, bx + 5 * f, by - 18, 3, 'white', 0);
+            
+            // Arms (grabbing handles)
+            Utils.drawLine(ctx, hx + 2 * f, hy + 12, bx + 25 * f, by - 22, 2, 'white', 0);
+            
+            // Handles
+            Utils.drawLine(ctx, bx + 22 * f, by - 28, bx + 28 * f, by - 16, 2, '#444', 0);
+
+            // Legs
+            Utils.drawLine(ctx, bx + 5 * f, by - 18, bx - 10 * f, by - 12, 3, 'white', 0);
+            
+            ctx.restore();
         } else super.draw(ctx);
     }
 }

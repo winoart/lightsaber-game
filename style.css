@@ -25,6 +25,8 @@ body {
     height: 100vh;
 }
 
+.hidden { display: none !important; }
+
 #game-container {
     position: relative;
     width: 100%;
