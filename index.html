@@ -10,10 +10,8 @@
 </head>
 <body>
     <div id="game-container">
-        <!-- Canvas for Game World -->
         <canvas id="game-canvas"></canvas>
 
-        <!-- UI Overlay -->
         <div id="ui-layer">
             <!-- HUD -->
             <div id="hud" class="hidden">
@@ -24,10 +22,10 @@
                     </div>
                 </div>
                 <div id="stage-info">STAGE 1</div>
-                <div class="stat-group right">
-                    <div class="label">ENEMY <span id="enemy-hp-text">100/100</span></div>
+                <div class="stat-group">
+                    <div class="label" style="text-align: right;">ENEMY <span id="enemy-hp-text">100/100</span></div>
                     <div class="bar-container">
-                        <div id="enemy-hp-bar" class="bar"></div>
+                        <div id="enemy-hp-bar" class="bar" style="float: right;"></div>
                     </div>
                 </div>
             </div>
@@ -41,10 +39,7 @@
 
             <div id="reward-menu" class="menu-screen hidden">
                 <h2>STAGE CLEAR!</h2>
-                <p>Choose your reward</p>
-                <div id="reward-options">
-                    <!-- Dynamic rewards -->
-                </div>
+                <div id="reward-options"></div>
             </div>
 
             <div id="game-over" class="menu-screen hidden">
@@ -52,17 +47,18 @@
                 <button id="retry-btn" class="glow-btn">TRY AGAIN</button>
             </div>
 
-            <!-- In-game Controls (Mobile) -->
+            <!-- RPG-Style Mobile Controls -->
             <div id="mobile-controls">
-                <div class="d-pad">
-                    <button id="left-btn" class="ctrl-btn"><i class="icon">L</i></button>
-                    <button id="down-btn" class="ctrl-btn"><i class="icon">D</i></button>
-                    <button id="right-btn" class="ctrl-btn"><i class="icon">R</i></button>
+                <!-- Move Joystick -->
+                <div class="joystick-area" id="joystick-area">
+                    <div id="joystick-knob"></div>
                 </div>
-                <div class="action-pad">
-                    <button id="attack-btn" class="ctrl-btn circle">A</button>
-                    <button id="jump-btn" class="ctrl-btn circle">J</button>
-                    <button id="skill-btn" class="ctrl-btn circle special">S</button>
+
+                <!-- Action Cluster -->
+                <div class="action-cluster">
+                    <button id="attack-btn" class="action-btn">ATK</button>
+                    <button id="jump-btn" class="action-btn">JUMP</button>
+                    <button id="skill-btn" class="action-btn special">SKILL</button>
                 </div>
             </div>
         </div>

@@ -109,8 +109,8 @@ class Game {
         // HUD Update
         document.getElementById('player-hp-bar').style.width = `${(this.player.hp / this.player.maxHp) * 100}%`;
         document.getElementById('enemy-hp-bar').style.width = `${(this.enemy.hp / this.enemy.maxHp) * 100}%`;
-        document.getElementById('player-hp-text').innerText = `${Math.ceil(this.player.hp)}/${this.player.maxHp} (ATK: ${this.player.attackDamage})`;
-        document.getElementById('enemy-hp-text').innerText = `${Math.ceil(this.enemy.hp)}/${this.enemy.maxHp}`;
+        document.getElementById('player-hp-text').innerText = `${Math.ceil(this.player.hp)}/${Math.ceil(this.player.maxHp)} (ATK: ${this.player.attackDamage})`;
+        document.getElementById('enemy-hp-text').innerText = `${Math.ceil(this.enemy.hp)}/${Math.ceil(this.enemy.maxHp)}`;
         
         if (this.enemy.hp <= 0) this.onStageClear();
         if (this.player.hp <= 0) this.onGameOver();

@@ -5,12 +5,14 @@ class Entity {
         this.color = color;
         this.isPlayer = isPlayer;
         
-        this.width = 30;  // Reduced size from 40
-        this.height = 60; // Reduced size from 80
+        // Further reduced size for better mobile feel
+        this.width = 25;  
+        this.height = 50; 
+        
         this.velX = 0;
         this.velY = 0;
-        this.speed = 4.5; // Slightly tuned speed
-        this.jumpForce = -14;
+        this.speed = 4.2; 
+        this.jumpForce = -13;
         this.maxJumps = 1;
         this.jumpCount = 0;
         this.grounded = false;
@@ -32,16 +34,8 @@ class Entity {
         this.attackDuration = 18; 
         this.attackTimer = 0;
 
-        // Skill-specific states
-        this.skills = {
-            sonicDash: false,
-            doubleJump: false,
-            powerWave: false,
-            berserk: false
-        };
+        this.skills = { sonicDash: false, doubleJump: false, powerWave: false, berserk: false };
         this.berserkTimer = 0;
-        this.activeProjectiles = [];
-
         this.trail = [];
         this.maxTrail = 12;
         this.saberColor = isPlayer ? '#00f2ff' : '#ff0055';
@@ -65,14 +59,15 @@ class Entity {
             this.grounded = false;
         }
 
-        // Screen Boundary Clamping (Don't go off-screen)
-        if (this.x < 0) {
-            this.x = 0;
+        // IMPROVED Screen Boundary Clamping
+        if (this.x < 5) { // 5px margin
+            this.x = 5;
             this.velX = 0;
-        } else if (this.x + this.width > window.innerWidth) {
-            this.x = window.innerWidth - this.width;
+        } else if (this.x + this.width > window.innerWidth - 5) {
+            this.x = window.innerWidth - this.width - 5;
             this.velX = 0;
         }
+
         this.animFrame += 0.15;
         
         if (this.isAttacking) {
@@ -99,32 +94,31 @@ class Entity {
 
     updateTrail() {
         const headX = this.x + this.width / 2;
-        const bodyCenterY = this.y + 25; 
+        const bodyCenterY = this.y + 20; // Corrected for 50px height
         let saberEnd = { x: headX, y: bodyCenterY };
         
         if (this.isAttacking) {
-            const progress = 1 - (this.attackTimer / this.attackDuration);
-            const p = progress;
+            const p = 1 - (this.attackTimer / this.attackDuration);
             
             if (this.isAirSpin) {
                 const angle = p * Math.PI * 2 * this.facing;
-                saberEnd.x = headX + Math.cos(angle) * 55; 
-                saberEnd.y = bodyCenterY + Math.sin(angle) * 55;
+                saberEnd.x = headX + Math.cos(angle) * 50; 
+                saberEnd.y = bodyCenterY + Math.sin(angle) * 50;
             }
             else if (this.combo === 1) { 
                 const angle = Utils.lerp(-Math.PI * 0.7, Math.PI * 0.7, p);
-                saberEnd.x = headX + Math.cos(angle) * 55 * this.facing;
-                saberEnd.y = bodyCenterY + Math.sin(angle) * 15;
+                saberEnd.x = headX + Math.cos(angle) * 50 * this.facing;
+                saberEnd.y = bodyCenterY + Math.sin(angle) * 12;
             } 
             else if (this.combo === 2) { 
                 const angle = Utils.lerp(-Math.PI * 0.8, -Math.PI * 0.2, p);
-                saberEnd.x = headX + Math.cos(angle) * 25 * this.facing + (p * 30 * this.facing);
+                saberEnd.x = headX + Math.cos(angle) * 20 * this.facing + (p * 25 * this.facing);
                 saberEnd.y = bodyCenterY + Math.sin(angle) * 60 + (p * 15);
             } 
             else { 
-                const thrust = Utils.lerp(10, 65, p);
+                const thrust = Utils.lerp(10, 60, p);
                 saberEnd.x = headX + thrust * this.facing;
-                saberEnd.y = bodyCenterY + (Math.sin(p * 10) * 4);
+                saberEnd.y = bodyCenterY + (Math.sin(p * 10) * 3);
             }
         }
 
@@ -134,19 +128,17 @@ class Entity {
 
     draw(ctx) {
         const headX = this.x + this.width / 2;
-        const headY = this.y + 12; 
-        const bodyCenterY = headY + 15;
-        const waistY = bodyCenterY + 18; 
+        const headY = this.y + 10; 
+        const bodyCenterY = headY + 12;
+        const waistY = bodyCenterY + 15; 
         
         ctx.lineJoin = 'round';
         
-        // Berserk effect
         if (this.berserkTimer > 0) {
             ctx.shadowBlur = 15;
             ctx.shadowColor = 'rgba(255, 100, 0, 0.5)';
         }
 
-        // Draw Trails
         if (this.isAttacking || this.trail.length > 2) {
             ctx.save();
             for (let i = 0; i < this.trail.length - 1; i++) {
@@ -154,7 +146,7 @@ class Entity {
                 const t1 = this.trail[i];
                 const t2 = this.trail[i+1];
                 ctx.globalAlpha = alpha;
-                Utils.drawLine(ctx, t1.x, t1.y, t2.x, t2.y, 6 - i / 2, this.saberColor, 12);
+                Utils.drawLine(ctx, t1.x, t1.y, t2.x, t2.y, 5 - i / 2, this.saberColor, 12);
             }
             ctx.restore();
         }
@@ -170,7 +162,7 @@ class Entity {
         let poseX = headX;
         let poseY = headY;
         let spineX = headX;
-        let armEndX = headX + 12 * this.facing;
+        let armEndX = headX + 10 * this.facing;
         let armEndY = bodyCenterY;
 
         if (this.isAttacking) {
@@ -178,43 +170,42 @@ class Entity {
                 armEndX = this.trail[0].x;
                 armEndY = this.trail[0].y;
             } else if (this.combo === 1) { 
-                spineX -= 4 * this.facing;
+                spineX -= 3 * this.facing;
                 armEndX = Utils.lerp(armEndX, this.trail[0].x, 0.4);
                 armEndY = Utils.lerp(armEndY, this.trail[0].y, 0.4);
             } else if (this.combo === 2) { 
-                poseY += 4;
+                poseY += 3;
                 armEndX = Utils.lerp(armEndX, this.trail[0].x, 0.4);
                 armEndY = Utils.lerp(armEndY, this.trail[0].y, 0.4);
             } else { 
-                spineX += 8 * this.facing;
+                spineX += 6 * this.facing;
                 armEndX = Utils.lerp(armEndX, this.trail[0].x, 0.8);
                 armEndY = Utils.lerp(armEndY, this.trail[0].y, 0.8);
             }
         }
 
         // Head
-        Utils.drawCircle(ctx, poseX, poseY, 10, 'white', 4); // Radius 10
+        Utils.drawCircle(ctx, poseX, poseY, 8, 'white', 4); 
         // Spine
-        Utils.drawLine(ctx, poseX, poseY + 10, spineX, waistY, 3, 'white', 0);
+        Utils.drawLine(ctx, poseX, poseY + 8, spineX, waistY, 3, 'white', 0);
         // Arms
         Utils.drawLine(ctx, (poseX + spineX)/2, bodyCenterY, armEndX, armEndY, 2, 'white', 0);
         
         // Legs
         if (this.isAirSpin) {
-            Utils.drawLine(ctx, spineX, waistY, spineX - 8, waistY + 8, 3, 'white', 0);
-            Utils.drawLine(ctx, spineX, waistY, spineX + 8, waistY + 8, 3, 'white', 0);
+            Utils.drawLine(ctx, spineX, waistY, spineX - 6, waistY + 6, 3, 'white', 0);
+            Utils.drawLine(ctx, spineX, waistY, spineX + 6, waistY + 6, 3, 'white', 0);
         } else {
-            let legOffset = Math.sin(this.animFrame) * 12;
+            let legOffset = Math.sin(this.animFrame) * 10;
             if (this.state === 'run') {
-                Utils.drawLine(ctx, spineX, waistY, spineX + legOffset * this.facing, waistY + 20, 3, 'white', 0);
-                Utils.drawLine(ctx, spineX, waistY, spineX - legOffset * this.facing, waistY + 20, 3, 'white', 0);
+                Utils.drawLine(ctx, spineX, waistY, spineX + legOffset * this.facing, waistY + 16, 3, 'white', 0);
+                Utils.drawLine(ctx, spineX, waistY, spineX - legOffset * this.facing, waistY + 16, 3, 'white', 0);
             } else {
-                Utils.drawLine(ctx, spineX, waistY, spineX + 8, waistY + 20, 3, 'white', 0);
-                Utils.drawLine(ctx, spineX, waistY, spineX - 8, waistY + 20, 3, 'white', 0);
+                Utils.drawLine(ctx, spineX, waistY, spineX + 6, waistY + 16, 3, 'white', 0);
+                Utils.drawLine(ctx, spineX, waistY, spineX - 6, waistY + 16, 3, 'white', 0);
             }
         }
 
-        // Final Saber Blade
         const saberEnd = this.trail[0] || { x: headX, y: bodyCenterY };
         Utils.drawLine(ctx, armEndX, armEndY, saberEnd.x, saberEnd.y, 3, this.saberColor, 15);
         ctx.restore();
@@ -248,123 +239,53 @@ class Entity {
 }
 
 class Player extends Entity {
-    constructor(x, y) {
-        super(x, y, '#00f2ff', true);
-    }
-
+    constructor(x, y) { super(x, y, '#00f2ff', true); }
     handleInput(input) {
-        // Horizontal Movement
-        if (input.isLeft()) {
-            this.velX = -this.speed;
-            this.facing = -1;
-            if (this.grounded) this.state = 'run';
-        } else if (input.isRight()) {
-            this.velX = this.speed;
-            this.facing = 1;
-            if (this.grounded) this.state = 'run';
-        } else if (input.isDown()) {
-            this.state = 'crouch';
-        } else {
-            if (this.grounded && !this.isAttacking) this.state = 'idle';
-        }
+        if (input.isLeft()) { this.velX = -this.speed; this.facing = -1; if (this.grounded) this.state = 'run'; }
+        else if (input.isRight()) { this.velX = this.speed; this.facing = 1; if (this.grounded) this.state = 'run'; }
+        else if (input.isDown()) { this.state = 'crouch'; }
+        else { if (this.grounded && !this.isAttacking) this.state = 'idle'; }
 
-        // Jumping Logic (including Double Jump)
         if (input.isJump() && !input.prevJump) {
-            if (this.grounded) {
-                this.velY = this.jumpForce;
-                this.jumpCount = 1;
-                this.grounded = false;
-                this.state = 'jump';
-            } else if (this.skills.doubleJump && this.jumpCount < 2) {
-                this.velY = this.jumpForce * 0.8;
-                this.jumpCount = 2;
-                this.state = 'jump';
-                // Add a small particle effect for double jump maybe?
-            }
+            if (this.grounded) { this.velY = this.jumpForce; this.jumpCount = 1; this.grounded = false; this.state = 'jump'; }
+            else if (this.skills.doubleJump && this.jumpCount < 2) { this.velY = this.jumpForce * 0.8; this.jumpCount = 2; this.state = 'jump'; }
         }
         input.prevJump = input.isJump();
-
         if (input.isAttack()) this.attack();
-
-        // Skill Button Logic
         if (input.isSkill() && this.attackCooldown <= 0) {
-            if (this.skills.sonicDash) {
-                this.isAttacking = true;
-                this.combo = 3; 
-                this.attackTimer = 15;
-                this.velX = this.facing * 40; 
-                this.attackCooldown = 90;
-            } else if (this.skills.berserk) {
-                this.berserkTimer = 300; // 5 seconds
-                this.attackSpeed = 2;
-                this.attackCooldown = 600;
-            }
+            if (this.skills.sonicDash) { this.isAttacking = true; this.combo = 3; this.attackTimer = 15; this.velX = this.facing * 40; this.attackCooldown = 90; }
+            else if (this.skills.berserk) { this.berserkTimer = 300; this.attackSpeed = 2; this.attackCooldown = 600; }
         }
     }
 }
 
 class Enemy extends Entity {
     constructor(x, y, level, isBoss = false) {
-        // Enemies get darker red as they level up
         const shade = Math.min(255, 100 + level * 15);
         const enemyColor = isBoss ? '#bc13fe' : `rgb(${shade}, 0, ${50 - level * 5})`;
         super(x, y, enemyColor, false);
-        
         this.level = level;
         this.isBoss = isBoss;
-        
-        // Exponential HP scaling
         this.maxHp = 50 + Math.pow(level, 1.6) * 15;
         this.hp = this.maxHp;
-        
-        // Speed scaling
-        this.speed = 2 + (level * 0.4);
-        
-        // Damage scaling
+        this.speed = 2 + (level * 0.35);
         this.attackDamage = 10 + (level * 4);
-        
-        // AI aggression
         this.aggression = 0.03 + (level * 0.012);
         this.attackCooldownBase = Math.max(15, 60 - level * 5);
-        
-        if (isBoss) {
-            this.width = 65;
-            this.height = 130;
-            this.speed = 5.5;
-            this.attackDamage = 60;
-            this.maxHp = 1500;
-            this.hp = this.maxHp;
-            this.aggression = 0.1;
-            this.saberColor = '#bc13fe';
-        }
+        if (isBoss) { this.width = 50; this.height = 100; this.speed = 4.5; this.attackDamage = 60; this.maxHp = 1500; this.hp = this.maxHp; this.aggression = 0.1; this.saberColor = '#bc13fe'; }
     }
 
     updateAI(player) {
         const dx = player.x - this.x;
         const dist = Math.abs(dx);
-        
-        const closeDist = this.isBoss ? 160 : 110;
-        
-        if (dist > closeDist) {
-            this.velX = Math.sign(dx) * this.speed;
-            this.facing = Math.sign(dx);
-            this.state = 'run';
-        } else {
-            this.velX = 0;
-            this.facing = Math.sign(dx);
+        const closeDist = this.isBoss ? 140 : 100;
+        if (dist > closeDist) { this.velX = Math.sign(dx) * this.speed; this.facing = Math.sign(dx); this.state = 'run'; }
+        else {
+            this.velX = 0; this.facing = Math.sign(dx);
             if (this.grounded && !this.isAttacking) this.state = 'idle';
-            
-            if (Math.random() < this.aggression && this.attackCooldown <= 0) {
-                this.attack();
-                this.attackCooldown = this.attackCooldownBase;
-            }
+            if (Math.random() < this.aggression && this.attackCooldown <= 0) { this.attack(); this.attackCooldown = this.attackCooldownBase; }
         }
-        
-        // Enemy Jump Logic (Scales with level)
         const jumpChance = 0.005 + (this.level * 0.002);
-        if (this.grounded && Math.random() < jumpChance) {
-            this.velY = this.jumpForce;
-            this.grounded = false;
-        }
+        if (this.grounded && Math.random() < jumpChance) { this.velY = this.jumpForce; this.grounded = false; }
     }
 }
