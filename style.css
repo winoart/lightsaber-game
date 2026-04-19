@@ -154,8 +154,52 @@ h1 { font-family: var(--font-heading); font-size: 48px; color: var(--player-colo
 #jump-btn { width: 65px; height: 65px; right: 100px; bottom: 0px; font-size: 18px; }
 #skill-btn { width: 65px; height: 65px; right: 20px; bottom: 100px; font-size: 18px; border-color: var(--boss-color); color: var(--boss-color); display: none; }
 
+#announcement {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: var(--font-heading);
+    font-size: 80px;
+    font-weight: bold;
+    color: var(--enemy-color);
+    text-shadow: 0 0 20px var(--enemy-color), 0 0 40px var(--enemy-color), 0 0 60px var(--enemy-color);
+    letter-spacing: 20px;
+    pointer-events: none;
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0;
+}
+#announcement.show { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+
+#speech-bubble {
+    position: absolute;
+    padding: 10px 20px;
+    background: white;
+    color: black;
+    border-radius: 10px;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: bold;
+    pointer-events: none;
+    transform: translate(-50%, -120%);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+#speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: white transparent transparent;
+}
+#speech-bubble.hidden { display: none; }
+
 @media (max-width: 600px) {
     #mobile-controls { padding: 0 15px 15px 15px; height: 160px; }
+    #announcement { font-size: 40px; letter-spacing: 10px; }
     .joystick-area { width: 120px; height: 120px; }
     #attack-btn { width: 80px; height: 80px; }
     #jump-btn { width: 55px; height: 55px; right: 85px; }

@@ -270,6 +270,7 @@ class Enemy extends Entity {
         super(x, y, enemyColor, false);
         this.level = level;
         this.isBoss = isBoss;
+        this.onMotorcycle = false;
         this.maxHp = 50 + Math.pow(level, 1.6) * 15;
         this.hp = this.maxHp;
         this.speed = 2 + (level * 0.35);
@@ -280,6 +281,7 @@ class Enemy extends Entity {
     }
 
     updateAI(player) {
+        if (this.onMotorcycle) return; // Don't move via AI while on bike
         const dx = player.x - this.x;
         const dist = Math.abs(dx);
         const closeDist = this.isBoss ? 140 : 100;
@@ -291,5 +293,34 @@ class Enemy extends Entity {
         }
         const jumpChance = 0.005 + (this.level * 0.002);
         if (this.grounded && Math.random() < jumpChance) { this.velY = this.jumpForce; this.grounded = false; }
+    }
+
+    draw(ctx) {
+        if (this.onMotorcycle) {
+            ctx.save();
+            // Simple Neon Motorcycle
+            const bx = this.x;
+            const by = this.y + this.height - 10;
+            // Wheels
+            Utils.drawCircle(ctx, bx - 10, by, 12, '#111', 5);
+            Utils.drawCircle(ctx, bx + 35, by, 12, '#111', 5);
+            // Frame
+            Utils.drawLine(ctx, bx - 10, by, bx + 35, by, 4, '#222', 0);
+            Utils.drawLine(ctx, bx + 15, by - 20, bx + 35, by, 4, '#222', 0);
+            Utils.drawLine(ctx, bx + 15, by - 20, bx - 5, by, 4, '#222', 0);
+            // Neon
+            Utils.drawLine(ctx, bx - 10, by, bx + 35, by, 2, this.color, 12);
+            ctx.restore();
+            
+            // Sitting sitting pose
+            const hx = this.x + this.width / 2;
+            const hy = this.y + 12;
+            Utils.drawCircle(ctx, hx, hy, 8, 'white', 4);
+            Utils.drawLine(ctx, hx, hy + 8, hx - 4, hy + 22, 3, 'white', 0); // Spine
+            Utils.drawLine(ctx, hx - 4, hy + 22, hx + 10, hy + 35, 3, 'white', 0); // Leg
+            Utils.drawLine(ctx, hx - 2, hy + 14, hx + 12, hy + 22, 2, 'white', 0); // Arm
+        } else {
+            super.draw(ctx);
+        }
     }
 }
