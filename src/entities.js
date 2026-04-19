@@ -5,12 +5,12 @@ class Entity {
         this.color = color;
         this.isPlayer = isPlayer;
         
-        this.width = 40;
-        this.height = 80;
+        this.width = 30;  // Reduced size from 40
+        this.height = 60; // Reduced size from 80
         this.velX = 0;
         this.velY = 0;
-        this.speed = 5;
-        this.jumpForce = -15;
+        this.speed = 4.5; // Slightly tuned speed
+        this.jumpForce = -14;
         this.maxJumps = 1;
         this.jumpCount = 0;
         this.grounded = false;
@@ -18,7 +18,7 @@ class Entity {
         this.maxHp = 100;
         this.hp = 100;
         this.attackDamage = 15;
-        this.attackSpeed = 1; // Multiplier
+        this.attackSpeed = 1; 
         
         this.state = 'idle'; 
         this.facing = 1; 
@@ -53,6 +53,7 @@ class Entity {
         this.y += this.velY;
         this.velX *= 0.85;
 
+        // Ground collision
         const floorY = window.innerHeight - 150;
         if (this.y + this.height > floorY) {
             this.y = floorY - this.height;
@@ -64,6 +65,14 @@ class Entity {
             this.grounded = false;
         }
 
+        // Screen Boundary Clamping (Don't go off-screen)
+        if (this.x < 0) {
+            this.x = 0;
+            this.velX = 0;
+        } else if (this.x + this.width > window.innerWidth) {
+            this.x = window.innerWidth - this.width;
+            this.velX = 0;
+        }
         this.animFrame += 0.15;
         
         if (this.isAttacking) {
@@ -90,7 +99,7 @@ class Entity {
 
     updateTrail() {
         const headX = this.x + this.width / 2;
-        const bodyCenterY = this.y + 35;
+        const bodyCenterY = this.y + 25; 
         let saberEnd = { x: headX, y: bodyCenterY };
         
         if (this.isAttacking) {
@@ -99,23 +108,23 @@ class Entity {
             
             if (this.isAirSpin) {
                 const angle = p * Math.PI * 2 * this.facing;
-                saberEnd.x = headX + Math.cos(angle) * 75;
-                saberEnd.y = bodyCenterY + Math.sin(angle) * 75;
+                saberEnd.x = headX + Math.cos(angle) * 55; 
+                saberEnd.y = bodyCenterY + Math.sin(angle) * 55;
             }
             else if (this.combo === 1) { 
                 const angle = Utils.lerp(-Math.PI * 0.7, Math.PI * 0.7, p);
-                saberEnd.x = headX + Math.cos(angle) * 75 * this.facing;
-                saberEnd.y = bodyCenterY + Math.sin(angle) * 20;
+                saberEnd.x = headX + Math.cos(angle) * 55 * this.facing;
+                saberEnd.y = bodyCenterY + Math.sin(angle) * 15;
             } 
             else if (this.combo === 2) { 
                 const angle = Utils.lerp(-Math.PI * 0.8, -Math.PI * 0.2, p);
-                saberEnd.x = headX + Math.cos(angle) * 30 * this.facing + (p * 40 * this.facing);
-                saberEnd.y = bodyCenterY + Math.sin(angle) * 80 + (p * 20);
+                saberEnd.x = headX + Math.cos(angle) * 25 * this.facing + (p * 30 * this.facing);
+                saberEnd.y = bodyCenterY + Math.sin(angle) * 60 + (p * 15);
             } 
             else { 
-                const thrust = Utils.lerp(10, 85, p);
+                const thrust = Utils.lerp(10, 65, p);
                 saberEnd.x = headX + thrust * this.facing;
-                saberEnd.y = bodyCenterY + (Math.sin(p * 10) * 5);
+                saberEnd.y = bodyCenterY + (Math.sin(p * 10) * 4);
             }
         }
 
@@ -125,9 +134,9 @@ class Entity {
 
     draw(ctx) {
         const headX = this.x + this.width / 2;
-        const headY = this.y + 15;
-        const bodyCenterY = headY + 20;
-        const waistY = bodyCenterY + 25;
+        const headY = this.y + 12; 
+        const bodyCenterY = headY + 15;
+        const waistY = bodyCenterY + 18; 
         
         ctx.lineJoin = 'round';
         
@@ -137,6 +146,7 @@ class Entity {
             ctx.shadowColor = 'rgba(255, 100, 0, 0.5)';
         }
 
+        // Draw Trails
         if (this.isAttacking || this.trail.length > 2) {
             ctx.save();
             for (let i = 0; i < this.trail.length - 1; i++) {
@@ -144,7 +154,7 @@ class Entity {
                 const t1 = this.trail[i];
                 const t2 = this.trail[i+1];
                 ctx.globalAlpha = alpha;
-                Utils.drawLine(ctx, t1.x, t1.y, t2.x, t2.y, 8 - i, this.saberColor, 15);
+                Utils.drawLine(ctx, t1.x, t1.y, t2.x, t2.y, 6 - i / 2, this.saberColor, 12);
             }
             ctx.restore();
         }
@@ -160,7 +170,7 @@ class Entity {
         let poseX = headX;
         let poseY = headY;
         let spineX = headX;
-        let armEndX = headX + 15 * this.facing;
+        let armEndX = headX + 12 * this.facing;
         let armEndY = bodyCenterY;
 
         if (this.isAttacking) {
@@ -168,40 +178,45 @@ class Entity {
                 armEndX = this.trail[0].x;
                 armEndY = this.trail[0].y;
             } else if (this.combo === 1) { 
-                spineX -= 5 * this.facing;
+                spineX -= 4 * this.facing;
                 armEndX = Utils.lerp(armEndX, this.trail[0].x, 0.4);
                 armEndY = Utils.lerp(armEndY, this.trail[0].y, 0.4);
             } else if (this.combo === 2) { 
-                poseY += 5;
+                poseY += 4;
                 armEndX = Utils.lerp(armEndX, this.trail[0].x, 0.4);
                 armEndY = Utils.lerp(armEndY, this.trail[0].y, 0.4);
             } else { 
-                spineX += 10 * this.facing;
+                spineX += 8 * this.facing;
                 armEndX = Utils.lerp(armEndX, this.trail[0].x, 0.8);
                 armEndY = Utils.lerp(armEndY, this.trail[0].y, 0.8);
             }
         }
 
-        Utils.drawCircle(ctx, poseX, poseY, 12, 'white', 5);
-        Utils.drawLine(ctx, poseX, poseY + 12, spineX, waistY, 4, 'white', 0);
-        Utils.drawLine(ctx, (poseX + spineX)/2, bodyCenterY, armEndX, armEndY, 3, 'white', 0);
+        // Head
+        Utils.drawCircle(ctx, poseX, poseY, 10, 'white', 4); // Radius 10
+        // Spine
+        Utils.drawLine(ctx, poseX, poseY + 10, spineX, waistY, 3, 'white', 0);
+        // Arms
+        Utils.drawLine(ctx, (poseX + spineX)/2, bodyCenterY, armEndX, armEndY, 2, 'white', 0);
         
+        // Legs
         if (this.isAirSpin) {
-            Utils.drawLine(ctx, spineX, waistY, spineX - 10, waistY + 10, 4, 'white', 0);
-            Utils.drawLine(ctx, spineX, waistY, spineX + 10, waistY + 10, 4, 'white', 0);
+            Utils.drawLine(ctx, spineX, waistY, spineX - 8, waistY + 8, 3, 'white', 0);
+            Utils.drawLine(ctx, spineX, waistY, spineX + 8, waistY + 8, 3, 'white', 0);
         } else {
-            let legOffset = Math.sin(this.animFrame) * 15;
+            let legOffset = Math.sin(this.animFrame) * 12;
             if (this.state === 'run') {
-                Utils.drawLine(ctx, spineX, waistY, spineX + legOffset * this.facing, waistY + 25, 4, 'white', 0);
-                Utils.drawLine(ctx, spineX, waistY, spineX - legOffset * this.facing, waistY + 25, 4, 'white', 0);
+                Utils.drawLine(ctx, spineX, waistY, spineX + legOffset * this.facing, waistY + 20, 3, 'white', 0);
+                Utils.drawLine(ctx, spineX, waistY, spineX - legOffset * this.facing, waistY + 20, 3, 'white', 0);
             } else {
-                Utils.drawLine(ctx, spineX, waistY, spineX + 10, waistY + 25, 4, 'white', 0);
-                Utils.drawLine(ctx, spineX, waistY, spineX - 10, waistY + 25, 4, 'white', 0);
+                Utils.drawLine(ctx, spineX, waistY, spineX + 8, waistY + 20, 3, 'white', 0);
+                Utils.drawLine(ctx, spineX, waistY, spineX - 8, waistY + 20, 3, 'white', 0);
             }
         }
 
+        // Final Saber Blade
         const saberEnd = this.trail[0] || { x: headX, y: bodyCenterY };
-        Utils.drawLine(ctx, armEndX, armEndY, saberEnd.x, saberEnd.y, 4, this.saberColor, 20);
+        Utils.drawLine(ctx, armEndX, armEndY, saberEnd.x, saberEnd.y, 3, this.saberColor, 15);
         ctx.restore();
     }
 
