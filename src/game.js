@@ -50,6 +50,7 @@ class Game {
         else document.getElementById('skill-btn').style.display = 'none';
 
         if (stageNum === 1) this.runStage1Intro();
+        else if (stageNum === 2) this.runStage2Intro();
         else { this.enemy.x = cx + 120; this.gameState = 'playing'; }
     }
 
@@ -78,11 +79,54 @@ class Game {
         }, 1500);
     }
 
+    runStage2Intro() {
+        this.gameState = 'cinematic';
+        this.enemy.onCar = true;
+        this.enemy.facing = -1;
+        this.enemy.x = window.innerWidth + 200;
+        
+        setTimeout(() => {
+            // Stop and exit
+            this.enemy.onCar = false;
+            // Falling physics
+            this.enemy.velY = -8;
+            this.enemy.velX = -3;
+            this.enemy.rotation = Math.PI / 2; // Trip and fall sideways
+            
+            setTimeout(() => {
+                // Stay down for a second
+                setTimeout(() => {
+                    this.enemy.rotation = 0; // Get back up
+                    this.enemy.facing = 1; // Look at player
+                    
+                    const bubble = document.getElementById('speech-bubble');
+                    bubble.innerText = 'Come on!';
+                    bubble.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        bubble.classList.add('hidden');
+                        const ann = document.getElementById('announcement');
+                        ann.innerText = 'FIGHTING';
+                        ann.classList.remove('hidden');
+                        setTimeout(() => ann.classList.add('show'), 50);
+                        
+                        setTimeout(() => {
+                            ann.classList.remove('show');
+                            setTimeout(() => ann.classList.add('hidden'), 500);
+                            this.gameState = 'playing';
+                        }, 1500);
+                    }, 1500);
+                }, 1000);
+            }, 800);
+        }, 2000);
+    }
+
+
     update() {
         if (this.gameState === 'cinematic') {
-            if (this.enemy.onMotorcycle) {
+            if (this.enemy.onMotorcycle || this.enemy.onCar) {
                 const tx = window.innerWidth / 2 + 100;
-                if (this.enemy.x > tx) this.enemy.x -= 7;
+                if (this.enemy.x > tx) this.enemy.x -= 8;
             }
             this.enemy.update(this.gravity);
             this.player.update(this.gravity);

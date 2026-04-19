@@ -30,6 +30,7 @@ class Entity {
         this.trail = [];
         this.maxTrail = 12;
         this.saberColor = isPlayer ? '#00f2ff' : '#ff0055';
+        this.rotation = 0; // Added for falling/tilting effects
     }
 
     update(gravity) {
@@ -111,10 +112,13 @@ class Entity {
             ctx.restore();
         }
         ctx.save();
+        ctx.translate(hx, by);
+        ctx.rotate(this.rotation);
         if (this.isAirSpin) {
             const p = 1 - (this.attackTimer / this.attackDuration);
-            ctx.translate(hx, by); ctx.rotate(p * Math.PI * 2 * this.facing); ctx.translate(-hx, -by);
+            ctx.rotate(p * Math.PI * 2 * this.facing);
         }
+        ctx.translate(-hx, -by);
         let px = hx, py = hy, sx = hx, ex = hx + 10 * this.facing, ey = by;
         if (this.isAttacking) {
             if (this.isAirSpin) { ex = this.trail[0].x; ey = this.trail[0].y; }
@@ -173,7 +177,7 @@ class Enemy extends Entity {
     constructor(x, y, level, isBoss = false) {
         const shade = Math.min(255, 100 + level * 15);
         super(x, y, isBoss ? '#bc13fe' : `rgb(${shade},0,${50-level*5})`, false);
-        this.level = level; this.isBoss = isBoss; this.onMotorcycle = false;
+        this.level = level; this.isBoss = isBoss; this.onMotorcycle = false; this.onCar = false;
         this.maxHp = 50 + Math.pow(level, 1.6) * 15; this.hp = this.maxHp;
         this.speed = 2 + (level * 0.35); this.attackDamage = 10 + (level * 4);
         this.aggression = 0.03 + (level * 0.012); this.attackCooldownBase = Math.max(15, 60 - level * 5);
@@ -234,6 +238,45 @@ class Enemy extends Entity {
             // Legs
             Utils.drawLine(ctx, bx + 5 * f, by - 18, bx - 10 * f, by - 12, 3, 'white', 0);
             
+            ctx.restore();
+        } else if (this.onCar) {
+            ctx.save();
+            const bx = this.x + this.width / 2;
+            const by = this.y + this.height - 5;
+            const f = this.facing;
+            
+            // Wheels
+            Utils.drawCircle(ctx, bx - 35 * f, by, 12, '#111', 5);
+            Utils.drawCircle(ctx, bx + 35 * f, by, 12, '#111', 5);
+            
+            // Car Body (Open car/Convertible)
+            ctx.fillStyle = '#333';
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(bx - 55 * f, by - 5);
+            ctx.lineTo(bx - 50 * f, by - 25); // Back
+            ctx.lineTo(bx - 10 * f, by - 25); // Seat area start
+            ctx.lineTo(bx + 20 * f, by - 25); // Front of cabin
+            ctx.lineTo(bx + 35 * f, by - 40); // Windshield top
+            ctx.lineTo(bx + 40 * f, by - 25); // Hood start
+            ctx.lineTo(bx + 60 * f, by - 25); // Front nose
+            ctx.lineTo(bx + 65 * f, by - 5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Headlight
+            Utils.drawCircle(ctx, bx + 62 * f, by - 18, 5, 'white', 15);
+
+            // Stickman (Driving sitting)
+            const hx = bx - 25 * f, hy = this.y + 18;
+            Utils.drawCircle(ctx, hx, hy, 8, 'white', 4);
+            Utils.drawLine(ctx, hx, hy + 8, bx - 20 * f, by - 15, 3, 'white', 0); // Torso
+            Utils.drawLine(ctx, bx - 20 * f, by - 15, bx + 10 * f, by - 15, 3, 'white', 0); // Lap
+            Utils.drawLine(ctx, hx, hy + 12, bx + 15 * f, by - 30, 2, 'white', 0); // Arms to steering wheel
+            Utils.drawLine(ctx, bx + 10 * f, by - 35, bx + 20 * f, by - 25, 3, '#111', 0); // Steering wheel
+
             ctx.restore();
         } else super.draw(ctx);
     }
