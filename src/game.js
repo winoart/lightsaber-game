@@ -134,6 +134,7 @@ class Game {
 
 
     update() {
+        if (this.shake > 0) this.shake *= 0.85; // Move here to ensure decay during cinematics
         if (this.gameState === 'cinematic') {
             if (this.enemy.onMotorcycle || this.enemy.onCar) {
                 const tx = window.innerWidth / 2 + 100;
@@ -157,23 +158,25 @@ class Game {
 
         // Combat
         [this.player, this.enemy].forEach(attacker => {
-            // Wider active window (3 to 17 frames)
-            if (attacker.isAttacking && attacker.attackTimer > 3 && attacker.attackTimer < 17 && !attacker.hitRegistered) {
+            // Generous active window
+            if (attacker.isAttacking && attacker.attackTimer > 2 && attacker.attackTimer < 18 && !attacker.hitRegistered) {
                 const target = attacker === this.player ? this.enemy : this.player;
                 const tip = attacker.getSaberTip();
-                
-                // Also check a midpoint on the saber to ensure close-range hits register
                 const rootX = attacker.x + attacker.width / 2;
                 const rootY = attacker.y + 20;
-                const mid = { x: (tip.x + rootX) / 2, y: (tip.y + rootY) / 2 };
+                
+                // Check 3 points along the blade for perfect registration
+                const p1 = tip;
+                const pMid = { x: (tip.x + rootX) / 2, y: (tip.y + rootY) / 2 };
+                const pBase = { x: (tip.x + rootX*3) / 4, y: (tip.y + rootY*3) / 4 };
                 
                 const checkHit = (p) => {
-                    const pad = 25; // Hitbox padding
+                    const pad = 40; // Much more generous padding
                     return p.x > target.x - pad && p.x < target.x + target.width + pad &&
                            p.y > target.y - pad && p.y < target.y + target.height + pad;
                 };
 
-                if (checkHit(tip) || checkHit(mid)) {
+                if (checkHit(p1) || checkHit(pMid) || checkHit(pBase)) {
                     const dmg = (attacker.isPlayer && (attacker.combo===3 || attacker.isAirSpin)) ? attacker.attackDamage*2 : (attacker.isPlayer ? attacker.attackDamage : 10+this.stage*2);
                     target.takeDamage(dmg);
                     this.createHitParticles(tip.x, tip.y, attacker === this.player ? '#ff0055' : '#00f2ff');
@@ -186,7 +189,6 @@ class Game {
         if (!this.enemy.isAttacking) this.enemy.hitRegistered = false;
 
         this.particles = this.particles.filter(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.02; return p.life > 0; });
-        if (this.shake > 0) this.shake *= 0.9;
         
         document.getElementById('player-hp-bar').style.width = `${(this.player.hp/this.player.maxHp)*100}%`;
         document.getElementById('enemy-hp-bar').style.width = `${(this.enemy.hp/this.enemy.maxHp)*100}%`;

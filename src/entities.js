@@ -79,14 +79,14 @@ class Entity {
                 const a = p * Math.PI * 2 * this.facing;
                 tip.x = hx + Math.cos(a) * 50; tip.y = by + Math.sin(a) * 50;
             } else if (this.combo === 1) {
-                const a = Utils.lerp(-Math.PI * 0.7, Math.PI * 0.7, p);
-                tip.x = hx + Math.cos(a) * 50 * this.facing; tip.y = by + Math.sin(a) * 12;
+                const a = Utils.lerp(-Math.PI * 0.8, Math.PI * 0.8, p);
+                tip.x = hx + Math.cos(a) * 85 * this.facing; tip.y = by + Math.sin(a) * 20;
             } else if (this.combo === 2) {
-                const a = Utils.lerp(-Math.PI * 0.8, -Math.PI * 0.2, p);
-                tip.x = hx + Math.cos(a) * 20 * this.facing + (p * 25 * this.facing); tip.y = by + Math.sin(a) * 60 + (p * 15);
+                const a = Utils.lerp(-Math.PI * 0.9, -Math.PI * 0.1, p);
+                tip.x = hx + Math.cos(a) * 45 * this.facing + (p * 45 * this.facing); tip.y = by + Math.sin(a) * 85 + (p * 25);
             } else {
-                const t = Utils.lerp(10, 60, p);
-                tip.x = hx + t * this.facing; tip.y = by + (Math.sin(p * 10) * 3);
+                const t = Utils.lerp(20, 95, p);
+                tip.x = hx + t * this.facing; tip.y = by + (Math.sin(p * 10) * 5);
             }
         }
         this.trail.unshift({ x: tip.x, y: tip.y });
