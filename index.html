@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stickman Saber: Neon Blade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;600&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Canvas for Game World -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- UI Overlay -->
+        <div id="ui-layer">
+            <!-- HUD -->
+            <div id="hud" class="hidden">
+                <div class="stat-group">
+                    <div class="label">PLAYER <span id="player-hp-text">100/100</span></div>
+                    <div class="bar-container">
+                        <div id="player-hp-bar" class="bar"></div>
+                    </div>
+                </div>
+                <div id="stage-info">STAGE 1</div>
+                <div class="stat-group right">
+                    <div class="label">ENEMY <span id="enemy-hp-text">100/100</span></div>
+                    <div class="bar-container">
+                        <div id="enemy-hp-bar" class="bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menus -->
+            <div id="main-menu" class="menu-screen active">
+                <h1 class="glitch-text">NEON SABER</h1>
+                <p>STICKMAN WARRIOR</p>
+                <button id="start-btn" class="glow-btn">BATTLE START</button>
+            </div>
+
+            <div id="reward-menu" class="menu-screen hidden">
+                <h2>STAGE CLEAR!</h2>
+                <p>Choose your reward</p>
+                <div id="reward-options">
+                    <!-- Dynamic rewards -->
+                </div>
+            </div>
+
+            <div id="game-over" class="menu-screen hidden">
+                <h2 class="danger">DEFEATED</h2>
+                <button id="retry-btn" class="glow-btn">TRY AGAIN</button>
+            </div>
+
+            <!-- In-game Controls (Mobile) -->
+            <div id="mobile-controls">
+                <div class="d-pad">
+                    <button id="left-btn" class="ctrl-btn"><i class="icon">L</i></button>
+                    <button id="down-btn" class="ctrl-btn"><i class="icon">D</i></button>
+                    <button id="right-btn" class="ctrl-btn"><i class="icon">R</i></button>
+                </div>
+                <div class="action-pad">
+                    <button id="attack-btn" class="ctrl-btn circle">A</button>
+                    <button id="jump-btn" class="ctrl-btn circle">J</button>
+                    <button id="skill-btn" class="ctrl-btn circle special">S</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/utilities.js"></script>
+    <script src="src/input.js"></script>
+    <script src="src/entities.js"></script>
+    <script src="src/game.js"></script>
+</body>
+</html>

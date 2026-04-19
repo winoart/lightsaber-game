@@ -1,0 +1,16 @@
+{
+  "name": "Stickman Saber: Neon Blade",
+  "short_name": "NeonSaber",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#00f2ff",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2592/2592317.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
