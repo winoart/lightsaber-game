@@ -34,6 +34,7 @@ class Game {
         this.player.x = cx - 120; this.player.y = gy - 60;
         this.player.hp = this.player.maxHp; this.player.velX = 0; this.player.velY = 0;
         this.player.state = 'idle'; this.player.trail = [];
+        this.shake = 0; // Reset screen shake when new stage starts
         
         const isBoss = stageNum === 10;
         this.enemy = new Enemy(window.innerWidth + 100, gy - 60, stageNum, isBoss);
@@ -82,42 +83,52 @@ class Game {
     runStage2Intro() {
         this.gameState = 'cinematic';
         this.enemy.onCar = true;
+        this.enemy.showCar = true;
         this.enemy.facing = -1;
         this.enemy.x = window.innerWidth + 200;
         
         setTimeout(() => {
-            // Stop and exit
+            // 1. Jump out standing, car disappears immediately
             this.enemy.onCar = false;
-            // Falling physics
-            this.enemy.velY = -8;
-            this.enemy.velX = -3;
-            this.enemy.rotation = Math.PI / 2; // Trip and fall sideways
+            this.enemy.showCar = false; // Vanish car now
+            this.enemy.velY = -11;
+            this.enemy.velX = -4;
+            this.enemy.state = 'jump'; // Standing/Jumping posture
             
+            // 2. Trip mid-air after a short moment of "looking cool"
             setTimeout(() => {
-                // Stay down for a second
+                this.enemy.rotation = Math.PI / 1.5; // Trip!
+                this.enemy.velY += 5; // Gravity slam
+                
+                // 3. Hit the ground
                 setTimeout(() => {
-                    this.enemy.rotation = 0; // Get back up
-                    this.enemy.facing = 1; // Look at player
+                    this.enemy.rotation = 1.6; // Faceplant/Lying
                     
-                    const bubble = document.getElementById('speech-bubble');
-                    bubble.innerText = 'Come on!';
-                    bubble.classList.remove('hidden');
-                    
+                    // 4. Stay down then get up
                     setTimeout(() => {
-                        bubble.classList.add('hidden');
-                        const ann = document.getElementById('announcement');
-                        ann.innerText = 'FIGHTING';
-                        ann.classList.remove('hidden');
-                        setTimeout(() => ann.classList.add('show'), 50);
+                        this.enemy.rotation = 0;
+                        this.enemy.facing = 1;
+                        
+                        const bubble = document.getElementById('speech-bubble');
+                        bubble.innerText = 'Come on!';
+                        bubble.classList.remove('hidden');
                         
                         setTimeout(() => {
-                            ann.classList.remove('show');
-                            setTimeout(() => ann.classList.add('hidden'), 500);
-                            this.gameState = 'playing';
+                            bubble.classList.add('hidden');
+                            const ann = document.getElementById('announcement');
+                            ann.innerText = 'FIGHTING';
+                            ann.classList.remove('hidden');
+                            setTimeout(() => ann.classList.add('show'), 50);
+                            
+                            setTimeout(() => {
+                                ann.classList.remove('show');
+                                setTimeout(() => ann.classList.add('hidden'), 500);
+                                this.gameState = 'playing';
+                            }, 1500);
                         }, 1500);
-                    }, 1500);
-                }, 1000);
-            }, 800);
+                    }, 1200);
+                }, 500);
+            }, 350);
         }, 2000);
     }
 
@@ -146,12 +157,23 @@ class Game {
 
         // Combat
         [this.player, this.enemy].forEach(attacker => {
-            if (attacker.isAttacking && attacker.attackTimer > 6 && attacker.attackTimer < 14 && !attacker.hitRegistered) {
+            // Wider active window (3 to 17 frames)
+            if (attacker.isAttacking && attacker.attackTimer > 3 && attacker.attackTimer < 17 && !attacker.hitRegistered) {
                 const target = attacker === this.player ? this.enemy : this.player;
                 const tip = attacker.getSaberTip();
-                const tc = { x: target.x + target.width/2, y: target.y + target.height/2 };
-                const d = Math.sqrt((tip.x-tc.x)**2 + (tip.y-tc.y)**2);
-                if (d < 40) {
+                
+                // Also check a midpoint on the saber to ensure close-range hits register
+                const rootX = attacker.x + attacker.width / 2;
+                const rootY = attacker.y + 20;
+                const mid = { x: (tip.x + rootX) / 2, y: (tip.y + rootY) / 2 };
+                
+                const checkHit = (p) => {
+                    const pad = 25; // Hitbox padding
+                    return p.x > target.x - pad && p.x < target.x + target.width + pad &&
+                           p.y > target.y - pad && p.y < target.y + target.height + pad;
+                };
+
+                if (checkHit(tip) || checkHit(mid)) {
                     const dmg = (attacker.isPlayer && (attacker.combo===3 || attacker.isAirSpin)) ? attacker.attackDamage*2 : (attacker.isPlayer ? attacker.attackDamage : 10+this.stage*2);
                     target.takeDamage(dmg);
                     this.createHitParticles(tip.x, tip.y, attacker === this.player ? '#ff0055' : '#00f2ff');
